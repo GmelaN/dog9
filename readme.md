@@ -19,16 +19,6 @@
 
 - Python >= 3.11
 - FastAPI >= 0.65.2
-- MariaDB >= 16
+- MariaDB >= 15.1
 - OLlama >= 0.1.29
 - BeautifulSoup4 >= 4.9.3
-
-### 데이터베이스 설정
-
-PostgreSQL을 설치하고, 다음의 SQL 명령어를 사용하여 필요한 데이터베이스와 사용자를 생성합니다.
-
-```sql
-CREATE DATABASE dogdogdb;
-CREATE USER doguser WITH ENCRYPTED PASSWORD 'yourpassword';
-GRANT ALL PRIVILEGES ON DATABASE dogdogdb TO doguser;
-```
