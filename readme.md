@@ -22,3 +22,4 @@
 - MariaDB >= 15.1
 - OLlama >= 0.1.29
 - BeautifulSoup4 >= 4.9.3
+- dotenv >= 1.0.1
