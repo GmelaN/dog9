@@ -1,0 +1,38 @@
+{
+    "gnu": {
+        "bachelor": "https://www.gnu.ac.kr/main/na/ntt/selectRssFeed.do?mi=1127&bbsId=1029",
+        "scholarships": "https://www.gnu.ac.kr/main/na/ntt/selectRssFeed.do?mi=1376&bbsId=1075",
+        "academics_events": "https://www.gnu.ac.kr/main/na/ntt/selectRssFeed.do?mi=1131&bbsId=1032",
+        "external": "https://www.gnu.ac.kr/main/na/ntt/selectRssFeed.do?mi=1132&bbsId=1033",
+        "agencies": "https://www.gnu.ac.kr/main/na/ntt/selectRssFeed.do?mi=1126&bbsId=1028",
+        "news": "https://www.gnu.ac.kr/main/na/ntt/selectRssFeed.do?mi=1289&bbsId=1039",
+        "cs_notices": "https://www.gnu.ac.kr/cse/na/ntt/selectRssFeed.do?mi=17093&bbsId=4753",
+        "cs_seminars": "https://www.gnu.ac.kr/cse/na/ntt/selectRssFeed.do?mi=17078&bbsId=4845"
+    },
+
+    "news": {
+        "sbs": {
+            "global": "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=08&plink=RSSREADER",
+            "social": "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=03&plink=RSSREADER",
+            "politics": "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=01&plink=RSSREADER",
+            "economics": "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02&plink=RSSREADER"
+        },
+        "yeonhap": {
+            "latest": "https://www.yonhapnewstv.co.kr/browse/feed/",
+            "headline": "https://www.yonhapnewstv.co.kr/category/news/headline/feed/",
+            "politics": "https://www.yonhapnewstv.co.kr/category/news/politics/feed/",
+            "economics": "https://www.yonhapnewstv.co.kr/category/news/economy/feed/",
+            "social": "https://www.yonhapnewstv.co.kr/category/news/society/feed/",
+            "local": "https://www.yonhapnewstv.co.kr/category/news/local/feed/"
+        }
+    },
+
+    "blog": {
+        "velog": {
+            "rss": "https://v2.velog.io/rss/",
+            "oneoneone": "https://v2.velog.io/rss/@oneoneone",
+            "tosspayments": "https://v2.velog.io/rss/@tosspayments",
+            "broccolism": "https://v2.velog.io/rss/@broccolism"
+        }
+    }
+}
