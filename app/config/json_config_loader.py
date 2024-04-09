@@ -60,8 +60,8 @@ class JSONConfig:
         result = JSONConfig.configuration
 
         for key in keys:
-            result = result.get(key, None)
-            if result is None:
+            if result is None or type(result) == str:
                 break
+            result = result.get(key, None)
 
         return result
