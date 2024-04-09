@@ -19,9 +19,10 @@ class DocumentDTO:
     href: str
 
 
-async def fetch_feed(type: str = "gnu") -> List[DocumentDTO]:
-    JSONConfig.load_config(config_type="urls")
-    urls: Dict[str, str] = JSONConfig.get_config(["gnu"])
+# async def fetch_feed(type: str = "gnu") -> List[DocumentDTO]:
+async def fetch_feed() -> List[DocumentDTO]:
+    JSONConfig.load_config(config_type="urls", file_path="./app/config/")
+    urls: Dict[str, str] = JSONConfig.get_config(["blog", "velog"])
 
     async with httpx.AsyncClient() as client:
         result: List[DocumentDTO] = []

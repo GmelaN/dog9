@@ -7,9 +7,10 @@ from app.models.document import Document
 router = APIRouter()
 
 @router.get("/feeds/all", response_model=List[Dict])
-async def get_filtered_feed(feed_url: str):
+async def get_filtered_feed():
+
     try:
-        documents = await fetch_feed(feed_url)
+        documents = await fetch_feed()
         result = [asdict(document) for document in documents]
         return result
 
