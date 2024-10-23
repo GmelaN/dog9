@@ -62,7 +62,7 @@ class ApiWrapper:
             journal_id =  "%04d" % (len(uploaded_journals) + 1)
             response = self.send("/journal", method="POST", auth=True, query_str=True, data={"journalId": journal_id, "journalNm": journal_name})
 
-            if response.status_code != 200:
+            if response.status_code != 200 and ("errorCode" in response.json().keys() and response.json()["errorCode"] != "news.alreadyJournalExists"):
                 raise RuntimeError("failed to upload journal: %s" % response.text)
 
         else:
@@ -113,7 +113,8 @@ class ApiWrapper:
             if tag_name == ApiWrapper.TAG_TABLE[tag]:
                 return tag
             
-        assert tag_id is not None
+        if tag_id is None:
+            raise RuntimeError(f"Please upload {tag_name}!")
         response = self.send("/tag", method="POST", auth=True, data={"tagName": tag_name, "tagId": tag_id})
 
         if response.status_code != 200:
@@ -124,7 +125,8 @@ class ApiWrapper:
         return tag_id
 
 
-    def upload_news(self, news: list[News]):
+    def upload_news(self, news: list[News]) -> list[int]:
+        news_idxes: list[int] = []
         for n in tqdm(news):
             journal_id = self.upload_journal(n.press)
             tag_id = self.upload_tag(n.tag)
@@ -142,6 +144,19 @@ class ApiWrapper:
 
             if response.status_code != 200:
                 raise RuntimeError("failed to upload news: %s" % response.text)
+            
+            news_idxes.append(response.json()["data"][0]["newsIdx"])
+
+        return news_idxes
+
+
+    def download_news(self) -> News:
+        response = self.send("/news", method="GET", auth=True)
+
+        if response.status_code != 200:
+            raise RuntimeError("failed to fetch news: %s" % response.text)
+
+        pass
 
 
     def send(self, endpoint: str, method: Literal["GET", "POST"]="GET", auth: bool=True, data: dict={}, query_str: bool=False) -> requests.Response:
