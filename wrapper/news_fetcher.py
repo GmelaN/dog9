@@ -8,71 +8,117 @@ from datetime import datetime, timezone, timedelta
 from bs4 import BeautifulSoup
 from time import sleep
 from random import randint
-import re
 
 from entity.entity import *
 
-NOW: str = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y%m%d%H%M")
-# DEFAULT_IMAGE_URL: str = "https://i.namu.wiki/i/aemZBGJQLVu6ePeapyhYqE6OCJQId6CbI0WnQ6CqzTUJpHCO4EzLhRR4HZqy01pjxIA4AywnLqm_Ysw5A-9TJsbqpOKjEnK6rA5VjJf0phRNIhSIu7RINe2JsOzfiZ0pD5ySVhrKAixdSUX0a4xuEQ.webp"
+
+NOW: str = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y%m%d")
 DEFAULT_IMAGE_URL: str = "https://www.gnu.ac.kr/images/web/main/sub_cnt/btype_vi_img12.png"
-N_PAGES = 1
+URL: str = "https://news.nate.com/recent"
 
-header: dict = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"}
-
-tags = {
-    # "politics" : ["정치", 100],
-    # "economy": ["경제", 101],
-    "social": ["사회", 102],
-    "lifestyle": ["라이프스타일", 103],
-    # "international": ["국제", 104],
-    # "science_tech": ["과학/기술", 105], 
+header: dict = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 }
 
-def fetch_news() -> dict:
-    news = {
-        tags[tag][0] : []
-        for tag in tags.keys()
-    }
+class NewsFetcher:
+    def __init__(self):
+        self.news = None
 
-    for tag in tqdm(tags.keys()):
-        articles: list[News] = []
+        self.tags = {
+            "politics" : ["정치", {"cate": "pol", "mid": "n201"}],
+            # "economy": ["경제", {"cate": "eco", "mid": "n301"}],
+            # "social": ["사회", {"cate": "soc", "mid": "n401"}],
+            # "international": ["국제", {"cate": "int", "mid": "n501"}],
+            # "science_tech": ["과학/기술", {"cate": "its", "mid": "n601"}], 
+        }
+    
+    
+    def get_tag_id(self, tag_name: str):
+        for tag in self.tags.keys():
+            if self.tags[tag][0] == tag_name:
+                return tag
+        
+        return None
 
-        for page in tqdm(range(N_PAGES)):
-            url = f"https://news.naver.com/section/template/SECTION_ARTICLE_LIST?sid={tags[tag][-1]}&sid2=&cluid=&pageNo={page}&date=&next={NOW}"
-            response = requests.get(url, headers=header)
-            bs = BeautifulSoup(json.loads(response.text)["renderedComponent"]["SECTION_ARTICLE_LIST"], features='html.parser')
-            sleep(0.5 + randint(0, 100) * 0.1)
 
-            for element in bs.findAll("li"):
-                url: str = element.select("a")[0]["href"].strip()
-                response = requests.get(url, headers=header)
+    def fetch_news(self, n_pages: int=1) -> dict:
+        self.news = {
+            self.tags[tag][0] : []
+            for tag in self.tags.keys()
+        }
 
-                pub_time: str = element.select(".sa_text_datetime")[0].text.strip()
+        for tag in tqdm(self.tags.keys()):
+            articles: list[News] = []
 
-                if pub_time[-1:] == "전": # "xx분전"
-                    numbers = int("".join(re.findall(r'\d+', pub_time)))
+            for page in tqdm(range(n_pages)):
+                args = self.tags[tag][1]
+                list_url = URL + f'?cate={args["cate"]}&mid={args["mid"]}&type=c&date={NOW}&page={page}'
+                response = requests.get(list_url, headers=header)
+                bs = BeautifulSoup(response.text, 'html.parser')
+                sleep(1 + randint(0, 10))
 
-                    timestamp_utc = datetime.now(timezone.utc) - timedelta(minutes=numbers)
-                    kst_time = timestamp_utc.astimezone(timezone(timedelta(hours=9)))
-                    pub_time = kst_time.isoformat().split("+")[0]
+                for element in bs.findAll("div", "mduSubjectList"):
+                    news_url: str = "https:" + element.select("a")[0]["href"].strip()
 
-                content_bs = BeautifulSoup(response.text, features='html.parser').select("#newsct_article")[0]
+                    response = requests.get(news_url, headers=header)
 
-                articles.append(
-                    News(
-                        title=element.select("strong")[0].text.strip(),
-                        # content=element.select(".sa_text_lede")[0].text.strip(),
-                        content=content_bs.text.strip(),
-                        image=content_bs.select("img")[0]["data-src"].strip() if content_bs.select("img") else DEFAULT_IMAGE_URL,
-                        url=element.select("a")[0]["href"].strip(),
-                        pub_time=pub_time,
-                        tag=tags[tag][0],
-                        press=element.select(".sa_text_press")[0].text.strip(),
+                    date_str: str = element.find('span', "medium").find("em").text
+                    pub_time = datetime.strptime("2024-" + date_str, '%Y-%m-%d %H:%M').isoformat()
+
+                    content_bs = BeautifulSoup(response.text, features='html.parser').select("#realArtcContents")[0]
+
+                    articles.append(
+                        News(
+                            title=element.find("h2", "tit").text.strip(),
+                            content=content_bs.text.strip(),
+                            image="https:" + element.find('img')["src"].strip() if element.find('img') else DEFAULT_IMAGE_URL,
+                            url= news_url,
+                            pub_time=pub_time,
+                            tag=self.tags[tag][0],
+                            press=element.find('span', "medium").text.split("\t")[0],
+                        )
                     )
-                )
 
-            sleep(0.5 + randint(0, 30))
+                sleep(1 + randint(0, 10))
 
-        news[tags[tag][0]] = articles[:]
-        print(tags[tag][0])
-    return news
+            self.news[self.tags[tag][0]] = articles[:]
+            print(self.tags[tag][0])
+
+        return self.news
+
+
+    def save_csv(self):
+        for tag in self.news.keys():
+            news = self.news[tag]
+            news.insert(0, tuple(title for title in News._fields))
+
+            with open(f"./news-{tag.replace('/', '-')}.csv", 'w', encoding="utf8") as f:
+                csv.writer(f).writerows(news)
+            
+            print(tag)
+
+
+    def load_csv(self) -> dict:
+        self.news = {
+            self.tags[tag][0] : []
+            for tag in self.tags.keys()
+        }
+
+        for name in ("경제", "과학-기술", "국제", "라이프스타일", "사회", "정치"):
+            with open(f"./news-{name}.csv", 'r', encoding="utf8") as f:
+                for i in list(iter(csv.reader(f)))[1:]:
+                    self.news[self.get_tag_id(name)].append(
+                        News(
+                            title=i[0],
+                            content=i[1],
+                            url=i[2],
+                            pub_time=i[3],
+                            tag=i[4],
+                            press=i[5],
+                            image=i[6],
+                        )
+                    )
+
+            print(f"{name}")
+
+        return self.news
