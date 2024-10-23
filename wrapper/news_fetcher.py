@@ -12,7 +12,6 @@ from random import randint
 from entity.entity import *
 
 
-NOW: str = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y%m%d")
 DEFAULT_IMAGE_URL: str = "https://www.gnu.ac.kr/images/web/main/sub_cnt/btype_vi_img12.png"
 URL: str = "https://news.nate.com/recent"
 
@@ -27,7 +26,7 @@ class NewsFetcher:
         self.tags = {
             "politics" : ["정치", {"cate": "pol", "mid": "n201"}],
             # "economy": ["경제", {"cate": "eco", "mid": "n301"}],
-            # "social": ["사회", {"cate": "soc", "mid": "n401"}],
+            "social": ["사회", {"cate": "soc", "mid": "n401"}],
             # "international": ["국제", {"cate": "int", "mid": "n501"}],
             # "science_tech": ["과학/기술", {"cate": "its", "mid": "n601"}], 
         }
@@ -42,6 +41,8 @@ class NewsFetcher:
 
 
     def fetch_news(self, n_pages: int=1) -> dict:
+        NOW: str = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y%m%d")
+
         self.news = {
             self.tags[tag][0] : []
             for tag in self.tags.keys()
@@ -50,7 +51,7 @@ class NewsFetcher:
         for tag in tqdm(self.tags.keys()):
             articles: list[News] = []
 
-            for page in tqdm(range(n_pages)):
+            for page in tqdm(range(1, n_pages + 1)):
                 args = self.tags[tag][1]
                 list_url = URL + f'?cate={args["cate"]}&mid={args["mid"]}&type=c&date={NOW}&page={page}'
                 response = requests.get(list_url, headers=header)
@@ -105,19 +106,23 @@ class NewsFetcher:
         }
 
         for name in ("경제", "과학-기술", "국제", "라이프스타일", "사회", "정치"):
-            with open(f"./news-{name}.csv", 'r', encoding="utf8") as f:
-                for i in list(iter(csv.reader(f)))[1:]:
-                    self.news[self.get_tag_id(name)].append(
-                        News(
-                            title=i[0],
-                            content=i[1],
-                            url=i[2],
-                            pub_time=i[3],
-                            tag=i[4],
-                            press=i[5],
-                            image=i[6],
-                        )
+            try:
+                f = open(f"./news-{name}.csv", 'r', encoding="utf8")
+            except:
+                continue
+
+            for i in list(iter(csv.reader(f)))[1:]:
+                self.news[name].append(
+                    News(
+                        title=i[0],
+                        content=i[1],
+                        url=i[2],
+                        pub_time=i[3],
+                        tag=i[4],
+                        press=i[5],
+                        image=i[6],
                     )
+                )
 
             print(f"{name}")
 
