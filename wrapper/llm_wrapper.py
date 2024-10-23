@@ -19,7 +19,7 @@ class LLM:
                 n_gpu_layers=-1,
                 verbose=verbose
             )
-        
+
         if LLM.tokenizer is None:
             LLM.tokenizer = AutoTokenizer.from_pretrained(LLM.MODEL_ID)
 
@@ -28,7 +28,7 @@ class LLM:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.prompt: str = ""
-    
+
     def __del__(self):
         del LLM.model
         del LLM.tokenizer
@@ -39,14 +39,14 @@ class LLM:
     def set_prompt(self, prompt: str):
         self.prompt = prompt
         return
-    
+
     def generate(self, instruction: str):
         if len(self.prompt) == 0:
             raise ValueError("prompt is not set.")
-        
+
         if len(instruction) == 0:
             raise ValueError("instruction is not set.")
-        
+
         generation_kwargs = {
             "max_tokens":self.max_tokens,
             "stop":["<|eot_id|>"],
