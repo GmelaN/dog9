@@ -11,13 +11,19 @@ class LLM:
 
     prompt: str = ""
 
-    def __init__(self, verbose: bool=False, temperature: float=0.3, n_ctx=8192, top_p: float=0.9, max_tokens: int=2048):
+    def __init__(self, embedding=False, verbose: bool=False, temperature: float=0.5, n_ctx=8192, top_p: float=0.7, max_tokens: int=2048):
+        if embedding:
+            self.mode = "embedding"
+        else:
+            self.mode = "inference"
+
         if LLM.model is None:
             LLM.model = Llama(
                 model_path=LLM.MODEL_PATH,
                 n_ctx=n_ctx,
                 n_gpu_layers=-1,
-                verbose=verbose
+                embedding=embedding,
+                verbose=verbose,
             )
 
         if LLM.tokenizer is None:
@@ -40,7 +46,13 @@ class LLM:
         self.prompt = prompt
         return
 
-    def generate(self, instruction: str):
+    def generate(self, instruction: str, reset_prompt: bool=False):
+        if self.mode != "inference":
+            raise RuntimeError(f"model is in {self.mode} (not inference mode)!")
+
+        if reset_prompt:
+            LLM.model.reset()
+
         if len(self.prompt) == 0:
             raise ValueError("prompt is not set.")
 

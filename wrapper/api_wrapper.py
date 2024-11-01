@@ -2,10 +2,14 @@ from typing import Literal
 import requests
 from tqdm import tqdm
 
+import csv
+
 from entity.entity import *
 from constants import *
 
 from urllib.parse import quote
+
+
 class ApiWrapper:
     TOKEN: str = ""
     URL: str = ""
@@ -125,29 +129,77 @@ class ApiWrapper:
         return tag_id
 
 
-    def upload_news(self, news: list[News]) -> list[int]:
-        news_idxes: list[int] = []
-        for n in tqdm(news):
-            journal_id = self.upload_journal(n.press)
-            tag_id = self.upload_tag(n.tag)
+    def upload_news(self, news: dict) -> list[UploadedNews]:
+        uploaded_news: list[UploadedNews] = []
 
-            data = {
-                "title": n.title,
-                "link": n.url,
-                "journalId": journal_id,
-                "publicationDate": n.pub_time,
-                "photoLink": n.image,
-                "tagIds": [tag_id]
-            }
+        for tag in tqdm(news.keys()):
+            for n in tqdm(news[tag]):
+                journal_id = self.upload_journal(n.press)
+                tag_id = self.upload_tag(n.tag)
 
-            response = self.send("/news", method="POST", auth=True, data=data)
+                data = {
+                    "title": n.title,
+                    "link": n.url,
+                    "journalId": journal_id,
+                    "publicationDate": n.pub_time,
+                    "photoLink": n.image,
+                    "tagIds": [tag_id]
+                }
 
-            if response.status_code != 200:
-                raise RuntimeError("failed to upload news: %s" % response.text)
-            
-            news_idxes.append(response.json()["data"][0]["newsIdx"])
+                response = self.send("/news", method="POST", auth=True, data=data)
 
-        return news_idxes
+                if response.status_code != 200:
+                    self.save_csv(uploaded_news)
+                    raise RuntimeError("failed to upload news: %s" % response.text)
+                
+                uploaded_news.append(
+                    UploadedNews(
+                        id=response.json()["data"][0]["newsIdx"],
+                        title=n.title,
+                        content=n.content,
+                        url=n.url,
+                        pub_time=n.pub_time,
+                        tag=n.tag,
+                        press=n.press,
+                        image=n.image
+                    )
+                )
+
+        self.save_csv(uploaded_news)
+        return uploaded_news
+    
+
+    def save_csv(self, uploaded_news: list):
+        uploaded_news.insert(0, tuple(title for title in UploadedNews._fields))
+
+        with open(f"./news-uploaded.csv", 'w', encoding="utf8") as f:
+            csv.writer(f).writerows(uploaded_news)
+        
+        uploaded_news.pop(0)
+    
+    
+    def load_csv(self) -> list[UploadedNews]:
+        uploaded_news: list[UploadedNews] = []
+
+        with open(f"./news-uploaded.csv", 'r', encoding="utf8") as f:
+            file = csv.reader(f)
+            next(file)
+
+            for row in file: # id,title,content,url,pub_time,tag,press,image
+                uploaded_news.append(
+                    UploadedNews(
+                        id=row[0],
+                        title=row[1],
+                        content=row[2],
+                        url=row[3],
+                        pub_time=row[4],
+                        tag=row[5],
+                        press=row[6],
+                        image=row[7],
+                    )
+                )
+        
+        return uploaded_news
 
 
     def download_news(self) -> News:
@@ -156,7 +208,7 @@ class ApiWrapper:
         if response.status_code != 200:
             raise RuntimeError("failed to fetch news: %s" % response.text)
 
-        pass
+        return response.json()['data']
 
 
     def send(self, endpoint: str, method: Literal["GET", "POST"]="GET", auth: bool=True, data: dict={}, query_str: bool=False) -> requests.Response:

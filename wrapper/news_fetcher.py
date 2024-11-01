@@ -25,10 +25,10 @@ class NewsFetcher:
 
         self.tags = {
             "politics" : ["정치", {"cate": "pol", "mid": "n201"}],
-            # "economy": ["경제", {"cate": "eco", "mid": "n301"}],
+            "economy": ["경제", {"cate": "eco", "mid": "n301"}],
             "social": ["사회", {"cate": "soc", "mid": "n401"}],
-            # "international": ["국제", {"cate": "int", "mid": "n501"}],
-            # "science_tech": ["과학/기술", {"cate": "its", "mid": "n601"}], 
+            "international": ["국제", {"cate": "int", "mid": "n501"}],
+            "science_tech": ["과학/기술", {"cate": "its", "mid": "n601"}], 
         }
     
     
@@ -105,9 +105,10 @@ class NewsFetcher:
             for tag in self.tags.keys()
         }
 
-        for name in ("경제", "과학-기술", "국제", "라이프스타일", "사회", "정치"):
+        for k in self.tags.keys():
+            name = self.tags[k][0]
             try:
-                f = open(f"./news-{name}.csv", 'r', encoding="utf8")
+                f = open(f"./news-{name.replace('/', '-')}.csv", 'r', encoding="utf8")
             except:
                 continue
 
