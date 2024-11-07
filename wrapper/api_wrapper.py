@@ -8,6 +8,7 @@ from entity.entity import *
 from constants import *
 
 from urllib.parse import quote
+from datetime import datetime, timezone, timedelta
 
 
 class ApiWrapper:
@@ -255,3 +256,23 @@ class ApiWrapper:
                 return journal
 
         return None
+
+
+    def upload_article(self, article: Article) -> requests.Response:
+        response = self.send(
+            "/article",
+            method="POST",
+            auth=True,
+            data={
+            "title": article.title,
+            "content": article.content,
+            "publicationDate": datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z",
+            "newsIdxes": article.news_id,
+            }
+        )
+
+
+        if response.status_code != 200:
+            raise RuntimeError("failed to upload journal: %s" % response.text)
+
+        return response
