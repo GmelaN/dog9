@@ -151,7 +151,8 @@ class ApiWrapper:
 
                 if response.status_code != 200:
                     self.save_csv(uploaded_news)
-                    raise RuntimeError("failed to upload news: %s" % response.text)
+                    print("failed to upload news, %s\t%s" % (n.title, response.text))
+                    continue
                 
                 uploaded_news.append(
                     UploadedNews(

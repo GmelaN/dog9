@@ -72,7 +72,8 @@ class NewsFetcher:
                         News(
                             title=element.find("h2", "tit").text.strip(),
                             content=content_bs.text.strip(),
-                            image="https:" + element.find('img')["src"].strip() if element.find('img') else DEFAULT_IMAGE_URL,
+                            # image="https:" + element.find('img')["src"].strip() if element.find('img') else DEFAULT_IMAGE_URL,
+                            image="https:" + content_bs.img["src"] if content_bs.find('img') else DEFAULT_IMAGE_URL,
                             url= news_url,
                             pub_time=pub_time,
                             tag=self.tags[tag][0],

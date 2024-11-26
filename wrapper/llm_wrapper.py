@@ -1,6 +1,8 @@
 from llama_cpp import Llama
 from transformers import AutoTokenizer
 
+import numpy as np
+
 
 class LLM:
     MODEL_ID = "MLP-KTLim/llama-3-Korean-Bllossom-8B-gguf-Q4_K_M"
@@ -80,3 +82,16 @@ class LLM:
 
         response = LLM.model(p, **generation_kwargs)
         return response["choices"][0]["text"]
+
+
+    def embed(self, text: list[str]) -> list[np.ndarray]:
+        if self.mode != "embedding":
+            raise RuntimeError("Model is not in embedding mode!")
+
+        embedded = self.model.create_embedding(text)
+        sentences = []
+
+        for sentence in embedded["data"]:
+            sentences.append(np.array(sentence["embedding"]))
+
+        return sentences
