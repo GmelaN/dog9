@@ -24,7 +24,13 @@ class NewsFetcher:
         self.news = None
 
         self.tags = {
-            "politics" : ["정치", {"cate": "pol", "mid": "n201"}],
+            "politics" : [
+                "정치",
+                {
+                    "cate": "pol",
+                    "mid": "n201"
+                }
+            ],
             "economy": ["경제", {"cate": "eco", "mid": "n301"}],
             "social": ["사회", {"cate": "soc", "mid": "n401"}],
             "international": ["국제", {"cate": "int", "mid": "n501"}],

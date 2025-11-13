@@ -21,9 +21,9 @@ class ApiWrapper:
         ApiWrapper.URL = url
         ApiWrapper.AUTH = AUTH
 
-        if AUTH:
-            self.login()
-            self.refresh_tag_table()
+        # if AUTH:
+        #     self.login()
+        #     self.refresh_tag_table()
 
 
     def register(self):

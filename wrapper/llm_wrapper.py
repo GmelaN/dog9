@@ -6,14 +6,14 @@ import numpy as np
 
 class LLM:
     MODEL_ID = "MLP-KTLim/llama-3-Korean-Bllossom-8B-gguf-Q4_K_M"
-    MODEL_PATH = "/home/gpp/src/model/llama3-korean-bllossom-8b/llama-3-Korean-Bllossom-8B-Q4_K_M.gguf"
+    MODEL_PATH = "/home/jshyeon/src/dog9/llama-3-Korean-Bllossom-8B-gguf-Q4_K_M/llama-3-Korean-Bllossom-8B-Q4_K_M.gguf"
 
     model: Llama | None = None
     tokenizer: AutoTokenizer | None = None
 
     prompt: str = ""
 
-    def __init__(self, embedding=False, verbose: bool=False, temperature: float=0.5, n_ctx=8192, top_p: float=0.7, max_tokens: int=2048):
+    def __init__(self, embedding=False, verbose: bool=False, temperature: float=0.5, n_ctx=32768, top_p: float=0.7, max_tokens: int=2048):
         if embedding:
             self.mode = "embedding"
         else:
